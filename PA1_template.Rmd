@@ -17,26 +17,38 @@ library(dplyr)
 ```
 
 ```{r echo=TRUE}
-actual_data <- data %>%
-               select(steps, date, interval) %>%
-               filter(!is.na(steps))
-dt_agg <- aggregate(steps ~ date, actual_data, sum)
-with(dt_agg,  hist(dt_agg$steps, 
-                   breaks = 10, 
-                   xlab = "Number of Steps", 
-                   main = "Total Number of Steps per Day"))
+total_steps <- function(dataset) {
+        aggregate(steps ~ date, dataset, sum)
+}
+
+plot_histogram <- function(dataset) {
+        actual_data <- dataset %>%
+                       select(steps, date, interval) %>%
+                       filter(!is.na(steps))
+        dt_agg <- total_steps(actual_data)
+        with(dt_agg,  hist(steps, 
+                           breaks = 10, 
+                           xlab = "Number of Steps", 
+                           main = "Total Number of Steps per Day"))
+        actual_data
+}
+actual_data <- plot_histogram(data)
 ```
 
 #### Median and Mean Values  
 ```{r echo=TRUE}
-with(dt_agg, {
-        boxplot(dt_agg$steps)
-        abline(h = mean(dt_agg$steps), lwd = 1, col = "red")
-})
+plot_mean_and_median <- function(dataset) {
+        with(dataset, {
+                boxplot(steps)
+                abline(h = mean(steps), lwd = 1, col = "red")
+        })
+}
+plot_mean_and_median(total_steps(actual_data))
 ```
+
 ```{r}
-cat(paste(summary(dt_agg)[, 2][4],
-      summary(dt_agg)[, 2][3],
+cat(paste(summary(total_steps(actual_data))[, 2][4],
+      summary(total_steps(actual_data))[, 2][3],
       sep = "\n"))
 ```
 ## What is the average daily activity pattern?
@@ -51,9 +63,9 @@ with(dt_avg, plot(y = steps,
 ```
 
 ```{r echo=TRUE}
-max_avg_steps <-dt_avg %>%
-                select(steps, interval) %>%
-                filter(steps == max(steps))
+max_avg_steps <- dt_avg %>%
+                 select(steps, interval) %>%
+                 filter(steps == max(steps))
 ```
 The 5-minute interval that contains the maximum average of steps, across all days, is `r max_avg_steps$interval`, with `r sprintf("%.1f", max_avg_steps$steps)` steps.
 
@@ -63,5 +75,25 @@ missing_values <- sum(is.na(data$steps))
 ```
 The number of rows with missing values is `r missing_values`.
 
+The missing values will be replaced by the average value of a given 5-minute interval.
+```{r}
+data[is.na(data$steps), "steps"] <- sapply(data[is.na(data$steps), "interval"],
+        function(interval) {dt_avg[dt_avg["interval"] == interval, "steps"]})
+head(data)
+```
+The new histogram for the total number of steps is
+```{r}
+new_data <- plot_histogram(data)
+```
+
+With new median and mean valus
+```{r}
+plot_mean_and_median(total_steps(new_data))
+```
+```{r}
+cat(paste(summary(total_steps(new_data))[, 2][4],
+      summary(total_steps(new_data))[, 2][3],
+      sep = "\n"))
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
