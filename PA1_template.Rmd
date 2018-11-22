@@ -5,17 +5,44 @@ output:
     keep_md: true
 ---
 
-
 ## Loading and preprocessing the data
-
-
+```{r echo=TRUE}
+data = read.csv("activity.csv")
+head(data)
+```
 
 ## What is mean total number of steps taken per day?
+```{r echo=TRUE, message=FALSE}
+library(dplyr)
+```
 
+```{r echo=TRUE}
+actual_data <- data %>%
+               select(steps, date) %>%
+               filter(!is.na(steps))
+dt_agg <- aggregate(steps ~ date, actual_data, sum)
+with(dt_agg,  hist(dt_agg$steps, 
+                   breaks = 10, 
+                   xlab = "Number of Steps", 
+                   main = "Total Number of Steps per Day"))
+```
 
-
+#### Median and Mean Values  
+```{r echo=TRUE}
+with(dt_agg, {
+        boxplot(dt_agg$steps)
+        abline(h = mean(dt_agg$steps), lwd = 1, col = "red")
+})
+```
+```{r}
+cat(paste(summary(dt_agg)[, 2][4],
+      summary(dt_agg)[, 2][3],
+      sep = "\n"))
+```
 ## What is the average daily activity pattern?
+```{r}
 
+```
 
 
 ## Imputing missing values
