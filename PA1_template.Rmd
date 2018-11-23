@@ -64,10 +64,10 @@ show_mean_and_median(actual_data)
 ```{r}
 dt_avg <- aggregate(steps ~ interval, data = actual_data, mean)
 with(dt_avg, {plot(y = steps, 
-                  x = interval, 
-                  type = "l", 
-                  ylab = "Average Number of Steps",
-                  xlab = "5-minute Interval per Day")
+                   x = interval, 
+                   type = "l", 
+                   ylab = "Average Number of Steps",
+                   xlab = "5-minute Interval per Day")
               title("Average Daily Steps per Interval")
      }
 )
